@@ -38,6 +38,7 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--color-border);
+            flex-shrink: 0;
         }
 
         .brand-container {
@@ -93,7 +94,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* MONITOR TASA BCV COMPACTO Y SERIO */
+        /* MONITOR TASA BCV */
         .bcv-monitor {
             background-color: #0c0c0e;
             border: 1px solid var(--color-border);
@@ -242,8 +243,10 @@
             border: 1px solid var(--color-border);
             border-radius: 12px;
             padding: 30px;
-            max-width: 650px;
+            width: 100%;
+            max-width: 950px;
             margin: 0 auto;
+            box-sizing: border-box;
         }
 
         .drop-zone {
@@ -296,7 +299,7 @@
             font-size: 0.85rem;
         }
 
-        input {
+        input, select {
             background-color: #0c0c0e;
             border: 1px solid var(--color-border);
             color: white;
@@ -305,7 +308,7 @@
             font-size: 1rem;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--color-blue-mid);
         }
@@ -344,7 +347,43 @@
             background-color: rgba(239, 68, 68, 0.15);
         }
 
-        /* CALENDARIO */
+        /* PAGINACIÓN */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .page-link {
+            background-color: #0c0c0e;
+            border: 1px solid var(--color-border);
+            color: var(--color-blue-light);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .page-link:hover {
+            background-color: var(--color-blue-dark);
+            color: var(--text-main);
+            border-color: var(--color-blue-mid);
+        }
+
+        .page-link.active {
+            background-color: var(--color-blue-mid);
+            color: white;
+            border-color: var(--color-blue-mid);
+            cursor: default;
+        }
+
+        /* CALENDARIO TOTALMENTE DESPLEGADO */
         .calendar-header {
             display: flex;
             justify-content: space-between;
@@ -361,36 +400,97 @@
         .calendar-day {
             background-color: var(--bg-card);
             border: 1px solid var(--color-border);
-            min-height: 95px;
+            min-height: 105px;
             border-radius: 6px;
-            padding: 8px;
+            padding: 10px 8px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             cursor: pointer;
+            box-sizing: border-box;
+            transition: background-color 0.2s;
         }
 
         .calendar-day:hover { 
-            background-color: var(--color-blue-dark); 
+            background-color: #1f1f23; 
         }
 
-        .event-badge {
-            font-size: 0.72rem;
-            padding: 4px 6px;
-            border-radius: 4px;
-            margin-top: 4px;
-            line-height: 1.2;
+        .calendar-day.empty {
+            background-color: transparent;
+            border: none;
+            cursor: default;
+        }
+        
+        .calendar-day.empty:hover {
+            background-color: transparent;
+        }
+
+        .day-number {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            display: block;
+            color: #ffffff;
+        }
+
+        .events-container {
             display: flex;
             flex-direction: column;
+            gap: 5px;
+            width: 100%;
         }
-        .event-badge.cuota-pendiente { background-color: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; }
-        .event-badge.cuota-pagada { background-color: var(--color-blue-dark); color: #38bdf8; border: 1px solid #0369a1; }
-        .event-badge.factura { background-color: #064e3b; color: #4ade80; border: 1px solid #14532d; }
+
+        /* TARJETAS DE REGISTROS APILADAS - COLORES AJUSTADOS EXACTAMENTE A 213.PNG */
+        .event-badge {
+            font-size: 0.72rem;
+            padding: 6px 8px;
+            border-radius: 5px;
+            line-height: 1.3;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        
+        /* Cuota Pendiente: Gris oscuro con texto sutil */
+        .event-badge.cuota-pendiente { 
+            background-color: #212124; 
+            color: #94a3b8; 
+            border: 1px solid #3f3f46; 
+        }
+        .event-badge.cuota-pendiente .badge-bs {
+            color: #64748b;
+        }
+        .event-badge.cuota-pendiente .badge-monto-line span {
+            color: #38bdf8;
+        }
+
+        /* Cuota Pagada */
+        .event-badge.cuota-pagada { 
+            background-color: #082f49; 
+            color: #38bdf8; 
+            border: 1px solid #0369a1; 
+        }
+
+        /* Inicial o factura directa */
+        .event-badge.factura { 
+            background-color: #064e3b; 
+            color: #4ade80; 
+            border: 1px solid #14532d; 
+        }
+
+        .badge-monto-line {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
+            font-size: 0.78rem;
+        }
 
         .badge-bs {
             font-size: 0.65rem;
             opacity: 0.85;
-            font-weight: bold;
+            margin-top: 1px;
         }
 
         /* MODAL */
@@ -424,6 +524,9 @@
         .btn-status.pending:hover { background-color: var(--color-blue-mid); }
         .btn-status.paid { background-color: #064e3b; color: #4ade80; cursor: default; }
     </style>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -458,7 +561,7 @@
                 <div class="bcv-monitor">
                     <div class="bcv-label-block">
                         <div class="bcv-title">Ref. BCV Diaria</div>
-                        <span id="bcv-status">● En Línea</span>
+                        <span id="bcv-status">● Sincronizando</span>
                     </div>
                     <div class="bcv-value-container">
                         <span class="bcv-currency">Bs.</span>
@@ -483,10 +586,10 @@
 
                 <div class="backup-section">
                     <button class="btn-backup" onclick="exportBackup()">
-                        📥 Exportar Respaldo
+                        📥 Exportar Respaldo Local
                     </button>
                     <button class="btn-backup" onclick="document.getElementById('import-input').click()">
-                        📤 Importar Respaldo
+                        📤 Importar a la Nube
                     </button>
                     <input type="file" id="import-input" style="display:none" accept=".json" onchange="importBackup(this)">
                 </div>
@@ -509,42 +612,52 @@
                         </div>
 
                         <div id="extracted-data" style="display:none; margin-top:20px;">
-                            <h3 style="color:var(--color-blue-light); font-size:1.1rem; border-bottom:1px solid var(--color-blue-dark); padding-bottom:8px; margin-bottom:15px;">Datos Detectados en la Imagen</h3>
+                            <h3 style="color:var(--color-blue-light); font-size:1.1rem; border-bottom:1px solid var(--color-blue-dark); padding-bottom:8px; margin-bottom:15px;">Datos del Plan de Pago</h3>
                             
                             <div class="form-group">
-                                <label>¿Qué artículo se facturó?</label>
-                                <input type="text" id="prod-name" required>
+                                <label>Nombre del Cliente / Teléfono vendido</label>
+                                <input type="text" id="prod-name" placeholder="Ej: Cliente de Captura - Samsung A18" required>
                             </div>
                             <div class="form-group">
                                 <label>Monto Total del Plan ($)</label>
-                                <input type="number" id="prod-total" value="265.00">
+                                <input type="number" id="prod-total" value="265.00" step="0.01">
                             </div>
                             <div class="form-group">
                                 <label>Inicial Cancelada ($)</label>
-                                <input type="number" id="prod-init" value="120.00">
+                                <input type="number" id="prod-init" value="120.00" step="0.01">
                             </div>
                             <div class="form-group">
                                 <label>Monto por Cuota ($)</label>
-                                <input type="number" id="prod-quota" value="48.33">
+                                <input type="number" id="prod-quota" value="48.33" step="0.01">
                             </div>
                             <div class="form-group">
-                                <label>Fecha del Registro (Extraída del ticket)</label>
+                                <label>Número de Cuotas</label>
+                                <select id="prod-qty-quotas">
+                                    <option value="3" selected>3 Cuotas</option>
+                                    <option value="1">1 Cuota</option>
+                                    <option value="2">2 Cuotas</option>
+                                    <option value="4">4 Cuotas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha del Primer Pago (Inicial)</label>
                                 <input type="date" id="prod-date">
                             </div>
-                            <button class="btn-submit" onclick="saveExtractedData()">Confirmar y Agendar en Calendario</button>
+                            <button class="btn-submit" onclick="saveExtractedData()">🔒 Registrar Plan de Pago en la Nube</button>
                         </div>
                     </div>
                 </div>
 
                 <div id="view-facturado" class="view-section">
-                    <div class="card" style="max-width:750px;">
-                        <h2 style="margin-top:0;">Historial de Ingresos Directos</h2>
+                    <div class="card">
+                        <h2 style="margin-top:0;">Historial de Ingresos Directos (Nube)</h2>
                         <div id="lista-facturas"></div>
+                        <div id="pagination-controls" class="pagination-container"></div>
                     </div>
                 </div>
 
                 <div id="view-calendario" class="view-section">
-                    <div class="card" style="max-width:900px;">
+                    <div class="card" style="max-width:980px;">
                         <div class="calendar-header">
                             <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; font-size:1.3rem; cursor:pointer;">◀</button>
                             <h2 id="month-title" style="margin:0; font-size:1.3rem;">Junio 2026</h2>
@@ -567,10 +680,39 @@
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('xnet_db')) || [];
-        let currentCalendarDate = new Date(2026, 5, 1); // Junio 2026
+        // CONFIGURACIÓN OFICIAL DETECTADA EN TU PROYECTO XNET-CASHEA
+        const firebaseConfig = {
+            apiKey: "AIzaSyAwpLHxPpbjiUDmRCUAhgchAVn_AdDoug",
+            authDomain: "xnet-cashea.firebaseapp.com",
+            databaseURL: "https://xnet-cashea-default-rtdb.firebaseio.com",
+            projectId: "xnet-cashea",
+            storageBucket: "xnet-cashea.appspot.com",
+            messagingSenderId: "55914413592",
+            appId: "1:55914413592:web:4e996ebb9a6cc771f424d"
+        };
 
-        // --- SISTEMA DE VERIFICACIÓN DE CLAVE ---
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let db = []; // Se poblará sincrónicamente desde Firebase
+        let currentCalendarDate = new Date(2026, 5, 1); // Junio 2026
+        let currentPage = 1;
+        const recordsPerPage = 10;
+
+        // Escucha en tiempo real de los datos en Firebase
+        database.ref('operaciones').on('value', (snapshot) => {
+            const data = snapshot.val();
+            db = [];
+            if (data) {
+                // Convertir el objeto de Firebase en la estructura de array que usa la app
+                Object.keys(data).forEach(key => {
+                    db.push({ firebaseKey: key, ...data[key] });
+                });
+            }
+            refreshActiveViews();
+        });
+
         function verificarClave() {
             const inputClave = document.getElementById('clave-acceso');
             const txtError = document.getElementById('error-login');
@@ -595,34 +737,19 @@
             }
         });
 
-        // --- SISTEMA DE RESOLUCIÓN Y ALMACENAMIENTO DE TASA ---
         function cargarTasaAlmacenada() {
             const inputBcv = document.getElementById('global-bcv');
-            const tasaLocal = localStorage.getItem('xnet_tasa_manual');
             
-            if (tasaLocal) {
-                inputBcv.value = parseFloat(tasaLocal);
-                document.getElementById('bcv-status').innerText = "● Ajustado";
-                document.getElementById('bcv-status').style.color = "#f59e0b";
-                refreshActiveViews();
-            } else {
-                fetch('https://ve.descubra.me/api/v1/rates')
-                    .then(res => res.json())
-                    .then(data => {
-                        if(data && data.bcv && !localStorage.getItem('xnet_tasa_manual')) {
-                            inputBcv.value = parseFloat(data.bcv).toFixed(2);
-                            document.getElementById('bcv-status').innerText = "● En Línea";
-                            document.getElementById('bcv-status').style.color = "#10b981";
-                            refreshActiveViews();
-                        }
-                    })
-                    .catch(() => {
-                        if (!localStorage.getItem('xnet_tasa_manual')) {
-                            document.getElementById('bcv-status').innerText = "● Manual";
-                            document.getElementById('bcv-status').style.color = "#a1a1aa";
-                        }
-                    });
-            }
+            // Escuchar el cambio de la tasa directamente desde Firebase para sincronizar múltiples pestañas
+            database.ref('configuracion/tasa_bcv').on('value', (snapshot) => {
+                const tasaNube = snapshot.val();
+                if(tasaNube) {
+                    inputBcv.value = parseFloat(tasaNube).toFixed(2);
+                    document.getElementById('bcv-status').innerText = "● En línea (Nube)";
+                    document.getElementById('bcv-status').style.color = "#10b981";
+                    refreshActiveViews();
+                }
+            });
         }
 
         function updateBcvCalculations() {
@@ -630,10 +757,7 @@
             let valor = parseFloat(inputBcv.value);
             
             if (!isNaN(valor) && valor > 0) {
-                localStorage.setItem('xnet_tasa_manual', valor);
-                document.getElementById('bcv-status').innerText = "● Ajustado";
-                document.getElementById('bcv-status').style.color = "#f59e0b";
-                refreshActiveViews();
+                database.ref('configuracion').update({ tasa_bcv: valor });
             }
         }
 
@@ -642,7 +766,6 @@
             if(document.getElementById('view-facturado').classList.contains('active')) renderFacturas();
         }
 
-        // --- INICIALIZADOR GLOBAL ---
         window.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('xnet_sesion_activa') === 'true') {
                 document.getElementById('pantalla-login').style.display = 'none';
@@ -653,14 +776,16 @@
             }
         });
 
-        // --- CONTROLADORES DE NAVEGACIÓN Y LOGICA INTERNA ---
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('view-' + tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active');
             if(tabId === 'calendario') renderCalendar();
-            if(tabId === 'facturado') renderFacturas();
+            if(tabId === 'facturado') {
+                currentPage = 1;
+                renderFacturas();
+            }
         }
 
         function simulateOCR() {
@@ -675,20 +800,23 @@
                 document.getElementById('prod-date').value = "2026-06-01"; 
                 document.getElementById('prod-name').focus();
                 document.getElementById('fill').style.width = '0%';
-            }, 1800);
+            }, 1200);
         }
 
         function saveExtractedData() {
-            const product = document.getElementById('prod-name').value.trim() || "Producto General";
+            const product = document.getElementById('prod-name').value.trim() || "Cliente Desconocido";
             const total = parseFloat(document.getElementById('prod-total').value);
             const init = parseFloat(document.getElementById('prod-init').value);
             const quota = parseFloat(document.getElementById('prod-quota').value);
+            const qtyQuotas = parseInt(document.getElementById('prod-qty-quotas').value);
             const dateStr = document.getElementById('prod-date').value;
             const tasaHoy = parseFloat(document.getElementById('global-bcv').value);
             
             const groupID = 'id_' + Date.now();
 
-            db.push({ 
+            // 1. Guardar la Inicial en Firebase
+            const nuevaFacturaRef = database.ref('operaciones').push();
+            nuevaFacturaRef.set({
                 id: groupID,
                 tipo: 'factura', 
                 detalle: `Inicial Cashea — ${product} (Total: $${total})`, 
@@ -699,14 +827,16 @@
                 monto_bs: parseFloat((init * tasaHoy).toFixed(2))
             });
 
+            // 2. Guardar las cuotas programadas en Firebase
             let trackerDate = new Date(dateStr + 'T00:00:00');
-            for(let i = 1; i <= 3; i++) {
+            for(let i = 1; i <= qtyQuotas; i++) {
                 trackerDate.setDate(trackerDate.getDate() + 14);
-                db.push({
+                const nuevaCuotaRef = database.ref('operaciones').push();
+                nuevaCuotaRef.set({
                     id: groupID,
                     tipo: 'cuota',
                     sub_id: `${groupID}_c${i}`,
-                    detalle: `${product} (Cuota #${i + 1} de 4)`,
+                    detalle: `${product} (Cuota #${i} de ${qtyQuotas})`,
                     monto: quota,
                     fecha: trackerDate.toISOString().split('T')[0],
                     estado: 'pendiente',
@@ -715,55 +845,68 @@
                 });
             }
 
-            localStorage.setItem('xnet_db', JSON.stringify(db));
-            alert('¡Plan de cobros guardado en base de datos!');
+            alert('¡Plan de cobros guardado directamente en la nube de Firebase!');
             document.getElementById('extracted-data').style.display = 'none';
-            switchTab('facturado');
+            switchTab('calendario');
         }
 
         function markQuotaAsPaid(subID) {
             const tasaActual = parseFloat(document.getElementById('global-bcv').value);
+            // Buscar el item por sub_id en el array local para obtener su llave de Firebase
             let item = db.find(e => e.sub_id === subID);
-            if(item) {
-                item.estado = 'pagada';
-                item.tasa_pago = tasaActual;
-                item.monto_bs = parseFloat((item.monto * tasaActual).toFixed(2));
-                localStorage.setItem('xnet_db', JSON.stringify(db));
-                renderCalendar();
+            if(item && item.firebaseKey) {
+                database.ref(`operaciones/${item.firebaseKey}`).update({
+                    estado: 'pagada',
+                    tasa_pago: tasaActual,
+                    monto_bs: parseFloat((item.monto * tasaActual).toFixed(2))
+                });
                 closeModal();
             }
         }
 
         function deleteRecord(groupID) {
-            if(confirm('¿Seguro que quieres eliminar este registro completo?')) {
-                db = db.filter(item => item.id !== groupID);
-                localStorage.setItem('xnet_db', JSON.stringify(db));
+            if(confirm('¿Seguro que quieres eliminar este plan de cobros completo en la nube?')) {
+                // Buscar todos los elementos relacionados con ese groupID y removerlos
+                db.forEach(item => {
+                    if(item.id === groupID && item.firebaseKey) {
+                        database.ref(`operaciones/${item.firebaseKey}`).remove();
+                    }
+                });
                 renderFacturas();
             }
         }
 
-        // === FUNCIÓN DE FACTURAS ORDENADA POR FECHA (MÁS RECIENTES PRIMERO) ===
         function renderFacturas() {
             const container = document.getElementById('lista-facturas');
+            const paginationContainer = document.getElementById('pagination-controls');
             
             let facts = db.filter(item => item.tipo === 'factura');
             
             if(facts.length === 0) {
-                container.innerHTML = '<p style="color:var(--color-blue-light);">No hay ingresos directos registrados.</p>';
+                container.innerHTML = '<p style="color:var(--color-blue-light); padding: 10px;">No hay ingresos directos registrados en la base de datos remota.</p>';
+                paginationContainer.innerHTML = '';
                 return;
             }
 
-            facts.sort((a, b) => {
-                return new Date(b.fecha + 'T00:00:00') - new Date(a.fecha + 'T00:00:00');
-            });
+            facts.sort((a, b) => new Date(b.fecha + 'T00:00:00') - new Date(a.fecha + 'T00:00:00'));
 
-            container.innerHTML = facts.map(f => `
-                <div style="padding:14px; border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center;">
-                    <span>${f.fecha} — <strong>${f.detalle}</strong></span>
+            const totalRecords = facts.length;
+            const totalPages = Math.ceil(totalRecords / recordsPerPage);
+            
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedFacts = facts.slice(startIndex, endIndex);
+
+            container.innerHTML = paginatedFacts.map(f => `
+                <div style="padding:16px 0; border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.95rem;">${f.fecha} — <strong>${f.detalle}</strong></span>
                     <div style="display:flex; align-items:center; gap:15px; text-align:right;">
                         <div>
                             <span style="color:#4ade80; font-weight:bold; font-size:1.05rem;">+$${f.monto}</span><br>
-                            <small style="color:var(--color-blue-light); font-size:0.75rem;">Bs. ${f.monto_bs.toFixed(2)}</small>
+                            <small style="color:var(--color-blue-light); font-size:0.75rem;">Bs. ${(f.monto_bs || 0).toFixed(2)}</small>
                         </div>
                         <button class="btn-delete" onclick="deleteRecord('${f.id}')">
                             <svg style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;" viewBox="0 0 24 24">
@@ -776,6 +919,25 @@
                     </div>
                 </div>
             `).join('');
+
+            if (totalPages > 1) {
+                let paginationHtml = '';
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHtml += `
+                        <button class="page-link ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                            ${i}
+                        </button>
+                    `;
+                }
+                paginationContainer.innerHTML = paginationHtml;
+            } else {
+                paginationContainer.innerHTML = '';
+            }
+        }
+
+        function goToPage(pageNumber) {
+            currentPage = pageNumber;
+            renderFacturas();
         }
 
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -794,103 +956,160 @@
                 grid.innerHTML += `<div style="text-align:center; font-weight:bold; color:var(--color-blue-light); padding-bottom:8px; font-size:0.9rem;">${d}</div>`;
             });
 
-            let firstDay = new Date(y, m, 1).getDay();
-            let blanks = firstDay === 0 ? 6 : firstDay - 1;
-            let totalDays = new Date(y, m + 1, 0).getDate();
+            let firstDayIndex = new Date(y, m, 1).getDay();
+            let blanks = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+            const totalDays = new Date(y, m + 1, 0).getDate();
 
-            for(let i = 0; i < blanks; i++) grid.innerHTML += '<div></div>';
+            for (let i = 0; i < blanks; i++) {
+                grid.innerHTML += `<div class="calendar-day empty"></div>`;
+            }
 
-            for(let d = 1; d <= totalDays; d++) {
-                let currentStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                let dayEvents = db.filter(e => e.fecha === currentStr);
+            for (let day = 1; day <= totalDays; day++) {
+                const dayStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayEvents = db.filter(e => e.fecha === dayStr);
 
-                let badges = dayEvents.map(e => {
-                    let bsCalculado = e.estado === 'pagada' ? e.monto_bs : (e.monto * globalTasa);
-                    let badgeClass = e.tipo === 'factura' ? 'factura' : (e.estado === 'pagada' ? 'cuota-pagada' : 'cuota-pendiente');
-                    let prefijo = e.estado === 'pagada' ? '✓ ' : '⌛ ';
-                    if(e.tipo === 'factura') prefijo = '+';
+                let badgesHtml = '';
+                if(dayEvents.length > 0) {
+                    badgesHtml = `<div class="events-container">`;
+                    dayEvents.forEach(e => {
+                        let claseBadge = 'factura';
+                        let icon = '+$';
+                        let displayMontoBs = '';
+                        
+                        if(e.tipo === 'cuota') {
+                            if(e.estado === 'pagada') {
+                                claseBadge = 'cuota-pagada';
+                                icon = '✓';
+                            } else {
+                                claseBadge = 'cuota-pendiente';
+                                icon = '⌛';
+                            }
+                        }
 
-                    return `
-                        <div class="event-badge ${badgeClass}">
-                            <span>${prefijo}$${e.monto}</span>
-                            <span class="badge-bs">Bs. ${parseFloat(bsCalculado).toFixed(2)}</span>
-                        </div>
-                    `;
-                }).join('');
+                        if(e.estado === 'pagada' && e.monto_bs) {
+                            displayMontoBs = `<span class="badge-bs">Bs. ${e.monto_bs.toFixed(2)}</span>`;
+                        } else if(e.estado === 'pendiente' && globalTasa > 0) {
+                            displayMontoBs = `<span class="badge-bs">Bs. ${(e.monto * globalTasa).toFixed(2)}</span>`;
+                        }
 
-                let cell = document.createElement('div');
-                cell.className = 'calendar-day';
-                cell.innerHTML = `<strong style="font-size:0.95rem;">${d}</strong><div>${badges}</div>`;
-                cell.onclick = () => openModal(currentStr, dayEvents);
-                grid.appendChild(cell);
+                        badgesHtml += `
+                            <div class="event-badge ${claseBadge}">
+                                <div class="badge-monto-line">
+                                    <span>${icon} $${e.monto}</span>
+                                </div>
+                                ${displayMontoBs}
+                            </div>`;
+                    });
+                    badgesHtml += `</div>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="calendar-day" onclick="openModal('${dayStr}')">
+                        <span class="day-number">${day}</span>
+                        ${badgesHtml}
+                    </div>`;
             }
         }
 
-        function changeMonth(dir) { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir); renderCalendar(); }
+        function changeMonth(dir) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir);
+            renderCalendar();
+        }
 
-        function openModal(date, events) {
-            document.getElementById('modal-date').innerText = `Detalles del día: ${date}`;
-            const list = document.getElementById('modal-events-list');
+        function openModal(dateStr) {
+            const modal = document.getElementById('day-modal');
+            const modalDate = document.getElementById('modal-date');
+            const listContainer = document.getElementById('modal-events-list');
             const globalTasa = parseFloat(document.getElementById('global-bcv').value) || 0;
 
-            if(events.length === 0) {
-                list.innerHTML = '<p style="color:var(--color-blue-light); margin:15px 0;">No hay movimientos agendados.</p>';
-            } else {
-                list.innerHTML = events.map(e => {
-                    let esFactura = e.tipo === 'factura';
-                    let esPagada = e.estado === 'pagada';
-                    let bsText = esPagada ? `Bs. ${parseFloat(e.monto_bs).toFixed(2)}` : `Bs. ${parseFloat(e.monto * globalTasa).toFixed(2)}`;
-                    let tasaInfo = esPagada ? `Tasa fijada: Bs. ${e.tasa_pago}` : `Tasa de hoy: Bs. ${globalTasa} (Estimado)`;
+            modalDate.innerText = `Registros para el ${dateStr}`;
+            listContainer.innerHTML = '';
 
-                    return `
-                        <div style="margin:15px 0; border-bottom:1px solid var(--color-border); padding-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <p style="margin:0 0 4px 0; font-size:0.95rem;"><strong>${e.detalle}</strong></p>
-                                <span style="font-size:1.05rem; font-weight:bold; color:${esFactura ? '#4ade80':'#38bdf8'}">$${e.monto}</span>
-                                <span style="font-size:0.9rem; color:var(--text-main); margin-left:10px;">— ${bsText}</span>
-                                <br><small style="color:var(--color-blue-light); font-size:0.75rem;">${tasaInfo}</small>
+            const dayEvents = db.filter(e => e.fecha === dateStr);
+
+            if(dayEvents.length === 0) {
+                listContainer.innerHTML = '<p style="color:var(--color-blue-light);">No hay planes ni cobros agendados para este día.</p>';
+            } else {
+                dayEvents.forEach(e => {
+                    let actionsHtml = '';
+                    let infoMonto = '';
+
+                    if(e.tipo === 'cuota') {
+                        if(e.estado === 'pendiente') {
+                            infoMonto = `<span style="color:#94a3b8; font-weight:bold;">$${e.monto}</span> (Est. Bs. ${(e.monto * globalTasa).toFixed(2)})`;
+                            actionsHtml = `<button class="btn-status pending" onclick="markQuotaAsPaid('${e.sub_id}')">Marcar como Pagado</button>`;
+                        } else {
+                            infoMonto = `<span style="color:#38bdf8; font-weight:bold;">$${e.monto}</span> (Pagado a Tasa: ${e.tasa_pago} -> Bs. ${e.monto_bs.toFixed(2)})`;
+                            actionsHtml = `<span class="btn-status paid">✓ Pagada</span>`;
+                        }
+                    } else {
+                        infoMonto = `<span style="color:#4ade80; font-weight:bold;">+$${e.monto}</span> (Bs. ${(e.monto_bs || 0).toFixed(2)})`;
+                        actionsHtml = `<span style="color:#4ade80; font-size:0.85rem; font-weight:bold;">[INICIAL DEPOSITADA]</span>`;
+                    }
+
+                    listContainer.innerHTML += `
+                        <div style="padding:15px 0; border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                            <div style="flex:1;">
+                                <p style="margin:0; font-weight:600; font-size:0.95rem;">${e.detalle}</p>
+                                <p style="margin:4px 0 0 0; font-size:0.85rem; color:var(--color-blue-light);">${infoMonto}</p>
                             </div>
-                            <div>
-                                ${esFactura ? '<span style="color:#4ade80; font-size:0.8rem; font-weight:bold;">[INICIAL]</span>' : 
-                                  (esPagada ? '<button class="btn-status paid">✓ PAGADA</button>' : 
-                                  `<button class="btn-status pending" onclick="markQuotaAsPaid('${e.sub_id}')">Marcar Pagada</button>`)}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                            <div>${actionsHtml}</div>
+                        </div>`;
+                });
             }
-            document.getElementById('day-modal').style.display = 'flex';
+            modal.style.display = 'flex';
         }
 
-        function closeModal() { document.getElementById('day-modal').style.display = 'none'; }
+        document.getElementById('day-modal').addEventListener('click', function(e) {
+            if(e.target === this) closeModal();
+        });
 
+        function closeModal() {
+            document.getElementById('day-modal').style.display = 'none';
+        }
+
+        // --- EXPORTAR RESPALDO LOCAL DE SEGURIDAD ---
         function exportBackup() {
-            if(db.length === 0) { alert('No hay datos para respaldar.'); return; }
+            if(db.length === 0) {
+                alert('No hay datos en la nube para descargar.');
+                return;
+            }
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `respaldo_xnet_cashea.json`);
+            downloadAnchor.setAttribute("download", `xnet_backup_nube_${new Date().toISOString().split('T')[0]}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
+        // --- IMPORTAR VIEJO RESPALDO LOCAL DIRECTO A LA NUBE ---
         function importBackup(input) {
             const file = input.files[0];
             if (!file) return;
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) {
-                        db = importedData;
-                        localStorage.setItem('xnet_db', JSON.stringify(db));
-                        alert('¡Datos restaurados!');
-                        location.reload();
+                    if(Array.isArray(importedData)) {
+                        if(confirm(`Se subirán ${importedData.length} registros a tu base de datos Firebase. ¿Continuar?`)) {
+                            importedData.forEach(item => {
+                                // Limpiar llaves temporales anteriores si las hubiere
+                                delete item.firebaseKey;
+                                database.ref('operaciones').push(item);
+                            });
+                            alert('¡Historial importado con éxito a la nube de Firebase!');
+                        }
+                    } else {
+                        alert('El archivo no tiene un formato válido.');
                     }
-                } catch (err) { alert('Error al procesar el archivo.'); }
+                } catch(err) {
+                    alert('Error al procesar el archivo JSON.');
+                }
             };
             reader.readAsText(file);
+            input.value = '';
         }
     </script>
 </body>
