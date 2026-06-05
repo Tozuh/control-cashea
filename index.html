@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xnet Computer - Organizador Privado</title>
+    
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    
     <style>
         :root {
             --bg-black: #09090b;
@@ -56,7 +59,6 @@
             gap: 14px;
             padding-left: 4px;
         }
-
         .logo-xnet {
             width: 52px;
             height: 52px;
@@ -131,7 +133,6 @@
             align-items: center;
             gap: 6px;
         }
-
         .bcv-currency {
             color: var(--color-blue-light);
             font-size: 0.85rem;
@@ -279,7 +280,6 @@
             overflow: hidden;
             margin-top: 10px;
         }
-
         .progress-fill {
             width: 0%;
             height: 100%;
@@ -428,7 +428,7 @@
         .day-number {
             font-weight: bold;
             font-size: 0.95rem;
-            margin-bottom: 8px;
+            margin-bottom: 0;
             display: block;
             color: #ffffff;
         }
@@ -440,7 +440,7 @@
             width: 100%;
         }
 
-        /* TARJETAS DE REGISTROS APILADAS - COLORES AJUSTADOS EXACTAMENTE A 213.PNG */
+        /* TARJETAS DE REGISTROS APILADAS */
         .event-badge {
             font-size: 0.72rem;
             padding: 6px 8px;
@@ -452,7 +452,6 @@
             width: 100%;
         }
         
-        /* Cuota Pendiente: Gris oscuro con texto sutil */
         .event-badge.cuota-pendiente { 
             background-color: #212124; 
             color: #94a3b8; 
@@ -465,14 +464,12 @@
             color: #38bdf8;
         }
 
-        /* Cuota Pagada */
         .event-badge.cuota-pagada { 
             background-color: #082f49; 
             color: #38bdf8; 
             border: 1px solid #0369a1; 
         }
 
-        /* Inicial o factura directa */
         .event-badge.factura { 
             background-color: #064e3b; 
             color: #4ade80; 
@@ -603,11 +600,11 @@
                         <div class="drop-zone" onclick="document.getElementById('file-input').click()">
                             <svg style="width:40px; height:40px; stroke:var(--color-blue-light); fill:none; stroke-width:1.5; margin-bottom:10px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                             <p style="margin:0; color:var(--text-main); font-size:0.95rem;">Arrastra o selecciona el capture aquí</p>
-                            <input type="file" id="file-input" style="display:none;" accept="image/*" onchange="simulateOCR()">
+                            <input type="file" id="file-input" style="display:none;" accept="image/*" onchange="procesarImagenReal(event)">
                         </div>
 
                         <div class="loader-container" id="ia-loader">
-                            <p style="color:var(--color-blue-light); margin:0; font-size:0.9rem;">Leyendo estructura del plan de pago...</p>
+                            <p style="color:var(--color-blue-light); margin:0; font-size:0.9rem;">Analizando imagen con Inteligencia Artificial...</p>
                             <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
                         </div>
 
@@ -620,15 +617,15 @@
                             </div>
                             <div class="form-group">
                                 <label>Monto Total del Plan ($)</label>
-                                <input type="number" id="prod-total" value="265.00" step="0.01">
+                                <input type="text" id="prod-total">
                             </div>
                             <div class="form-group">
                                 <label>Inicial Cancelada ($)</label>
-                                <input type="number" id="prod-init" value="120.00" step="0.01">
+                                <input type="text" id="prod-init">
                             </div>
                             <div class="form-group">
                                 <label>Monto por Cuota ($)</label>
-                                <input type="number" id="prod-quota" value="48.33" step="0.01">
+                                <input type="text" id="prod-quota">
                             </div>
                             <div class="form-group">
                                 <label>Número de Cuotas</label>
@@ -673,7 +670,8 @@
 
     <div id="day-modal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-date" style="margin-top:0; color:var(--color-blue-light);"></h3>
+            <div id="modal-header-container"></div>
+            
             <div id="modal-events-list"></div>
             <button class="btn-submit" style="background-color:#27272a; margin-top:25px;" onclick="closeModal()">Cerrar Ventana</button>
         </div>
@@ -690,26 +688,31 @@
             messagingSenderId: "55914413592",
             appId: "1:55914413592:web:4e996ebb9a6cc771f424d"
         };
-
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let db = []; // Se poblará sincrónicamente desde Firebase
+        let db = []; 
+        let tasasHistoricas = {}; 
         let currentCalendarDate = new Date(2026, 5, 1); // Junio 2026
         let currentPage = 1;
         const recordsPerPage = 10;
 
-        // Escucha en tiempo real de los datos en Firebase
+        // Escucha en tiempo real de los datos
         database.ref('operaciones').on('value', (snapshot) => {
             const data = snapshot.val();
             db = [];
             if (data) {
-                // Convertir el objeto de Firebase en la estructura de array que usa la app
                 Object.keys(data).forEach(key => {
                     db.push({ firebaseKey: key, ...data[key] });
                 });
             }
+            refreshActiveViews();
+        });
+
+        // Escucha en tiempo real del historial de tasas
+        database.ref('tasas_historicas').on('value', (snapshot) => {
+            tasasHistoricas = snapshot.val() || {};
             refreshActiveViews();
         });
 
@@ -731,16 +734,9 @@
             }
         }
 
-        document.getElementById('clave-acceso').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                verificarClave();
-            }
-        });
-
         function cargarTasaAlmacenada() {
             const inputBcv = document.getElementById('global-bcv');
             
-            // Escuchar el cambio de la tasa directamente desde Firebase para sincronizar múltiples pestañas
             database.ref('configuracion/tasa_bcv').on('value', (snapshot) => {
                 const tasaNube = snapshot.val();
                 if(tasaNube) {
@@ -776,6 +772,12 @@
             }
         });
 
+        document.getElementById('clave-acceso').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verificarClave();
+            }
+        });
+
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
@@ -788,33 +790,132 @@
             }
         }
 
-        function simulateOCR() {
-            document.getElementById('ia-loader').style.display = 'block';
-            document.getElementById('fill').style.width = '100%';
-            document.getElementById('extracted-data').style.display = 'none';
+        async function procesarImagenReal(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const loader = document.getElementById('ia-loader');
+            const fill = document.getElementById('fill');
+            const dataDiv = document.getElementById('extracted-data');
             
-            setTimeout(() => {
-                document.getElementById('ia-loader').style.display = 'none';
-                document.getElementById('extracted-data').style.display = 'block';
-                document.getElementById('prod-name').value = ''; 
-                document.getElementById('prod-date').value = "2026-06-01"; 
-                document.getElementById('prod-name').focus();
-                document.getElementById('fill').style.width = '0%';
-            }, 1200);
+            loader.style.display = 'block';
+            dataDiv.style.display = 'none';
+            fill.style.width = '30%';
+
+            try {
+                const { data: { text } } = await Tesseract.recognize(file, 'spa');
+                console.log("Texto detectado:", text); 
+                fill.style.width = '70%';
+
+                let numeros = text.match(/\d+,\d{2}/g); 
+                if(!numeros) {
+                   numeros = text.match(/\d+\.\d{2}/g);
+                }
+
+                const textLower = text.toLowerCase();
+                let fechaFinalHTML = "";
+
+                const mesesDic = {
+                    'ene': '01', 'feb': '02', 'mar': '03', 'abr': '04', 'may': '05', 'jun': '06',
+                    'jul': '07', 'ago': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dic': '12',
+                    'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 'mayo': '05', 'junio': '06',
+                    'julio': '07', 'agosto': '08', 'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+                };
+
+                const regexFechaTexto = /(\d{1,2})\s+([a-z]{3,10})\s+(\d{4})/;
+                const matchTexto = textLower.match(regexFechaTexto);
+
+                if (matchTexto) {
+                    const dia = matchTexto[1].padStart(2, '0');
+                    const mesTexto = matchTexto[2];
+                    const anio = matchTexto[3];
+                    
+                    let mesNum = '01';
+                    for (const clave in mesesDic) {
+                        if (mesTexto.startsWith(clave)) {
+                            mesNum = mesesDic[clave];
+                            break;
+                        }
+                    }
+                    fechaFinalHTML = `${anio}-${mesNum}-${dia}`;
+                }
+
+                if (!fechaFinalHTML) {
+                    const regexFechaNum = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
+                    const matchNum = textLower.match(regexFechaNum);
+                    if (matchNum) {
+                        const dia = matchNum[1].padStart(2, '0');
+                        const mes = matchNum[2].padStart(2, '0');
+                        let anio = matchNum[3];
+                        if (anio.length === 2) anio = '20' + anio;
+                        fechaFinalHTML = `${anio}-${mes}-${dia}`;
+                    }
+                }
+
+                if (!fechaFinalHTML) {
+                    fechaFinalHTML = new Date().toISOString().split('T')[0];
+                }
+
+                if (numeros && numeros.length >= 3) {
+                    document.getElementById('prod-total').value = numeros[0].replace(',', '.');
+                    document.getElementById('prod-init').value = numeros[1].replace(',', '.');
+                    document.getElementById('prod-quota').value = numeros[2].replace(',', '.');
+                    document.getElementById('prod-date').value = fechaFinalHTML;
+                    
+                    document.getElementById('prod-name').focus();
+                    dataDiv.style.display = 'block';
+                    fill.style.width = '100%';
+                } else {
+                    alert("No pude detectar los montos correctamente. Asegúrate de que el capture sea nítido.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Hubo un error al procesar la imagen con Inteligencia Artificial.");
+            } finally {
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    fill.style.width = '0%';
+                }, 1000);
+            }
+        }
+
+        function guardarTasaHistorica(dateStr) {
+            const inputVal = parseFloat(document.getElementById('modal-tasa-input').value);
+            if(!isNaN(inputVal) && inputVal > 0) {
+                database.ref('tasas_historicas/' + dateStr).set(inputVal).then(() => {
+                    alert(`Tasa manual para el ${dateStr} fijada en Bs. ${inputVal}`);
+                });
+            }
         }
 
         function saveExtractedData() {
             const product = document.getElementById('prod-name').value.trim() || "Cliente Desconocido";
-            const total = parseFloat(document.getElementById('prod-total').value);
-            const init = parseFloat(document.getElementById('prod-init').value);
-            const quota = parseFloat(document.getElementById('prod-quota').value);
+            const totalStr = document.getElementById('prod-total').value.replace(',', '.');
+            const initStr = document.getElementById('prod-init').value.replace(',', '.');
+            const quotaStr = document.getElementById('prod-quota').value.replace(',', '.');
+
+            const total = parseFloat(totalStr);
+            const init = parseFloat(initStr);
+            const quota = parseFloat(quotaStr);
+
+            if (isNaN(total) || isNaN(init) || isNaN(quota)) {
+                alert("Por favor verifica que los montos sean números válidos.");
+                return;
+            }
+
             const qtyQuotas = parseInt(document.getElementById('prod-qty-quotas').value);
             const dateStr = document.getElementById('prod-date').value;
-            const tasaHoy = parseFloat(document.getElementById('global-bcv').value);
+            
+            if(!dateStr) {
+                alert("Por favor selecciona una fecha.");
+                return;
+            }
+
+            const tasaGlobal = parseFloat(document.getElementById('global-bcv').value);
+            const tasaAplicar = tasasHistoricas[dateStr] ? parseFloat(tasasHistoricas[dateStr]) : tasaGlobal;
             
             const groupID = 'id_' + Date.now();
 
-            // 1. Guardar la Inicial en Firebase
             const nuevaFacturaRef = database.ref('operaciones').push();
             nuevaFacturaRef.set({
                 id: groupID,
@@ -823,11 +924,10 @@
                 monto: init, 
                 fecha: dateStr,
                 estado: 'pagada',
-                tasa_pago: tasaHoy,
-                monto_bs: parseFloat((init * tasaHoy).toFixed(2))
+                tasa_pago: tasaAplicar,
+                monto_bs: parseFloat((init * tasaAplicar).toFixed(2))
             });
 
-            // 2. Guardar las cuotas programadas en Firebase
             let trackerDate = new Date(dateStr + 'T00:00:00');
             for(let i = 1; i <= qtyQuotas; i++) {
                 trackerDate.setDate(trackerDate.getDate() + 14);
@@ -845,20 +945,22 @@
                 });
             }
 
-            alert('¡Plan de cobros guardado directamente en la nube de Firebase!');
+            alert('¡Plan de cobros guardado en la nube!');
             document.getElementById('extracted-data').style.display = 'none';
+            document.getElementById('prod-name').value = '';
             switchTab('calendario');
         }
 
-        function markQuotaAsPaid(subID) {
-            const tasaActual = parseFloat(document.getElementById('global-bcv').value);
-            // Buscar el item por sub_id en el array local para obtener su llave de Firebase
+        function markQuotaAsPaid(subID, dateStr) {
+            const tasaGlobal = parseFloat(document.getElementById('global-bcv').value);
+            const tasaAplicar = tasasHistoricas[dateStr] ? parseFloat(tasasHistoricas[dateStr]) : tasaGlobal;
+            
             let item = db.find(e => e.sub_id === subID);
             if(item && item.firebaseKey) {
                 database.ref(`operaciones/${item.firebaseKey}`).update({
                     estado: 'pagada',
-                    tasa_pago: tasaActual,
-                    monto_bs: parseFloat((item.monto * tasaActual).toFixed(2))
+                    tasa_pago: tasaAplicar,
+                    monto_bs: parseFloat((item.monto * tasaAplicar).toFixed(2))
                 });
                 closeModal();
             }
@@ -866,7 +968,6 @@
 
         function deleteRecord(groupID) {
             if(confirm('¿Seguro que quieres eliminar este plan de cobros completo en la nube?')) {
-                // Buscar todos los elementos relacionados con ese groupID y removerlos
                 db.forEach(item => {
                     if(item.id === groupID && item.firebaseKey) {
                         database.ref(`operaciones/${item.firebaseKey}`).remove();
@@ -900,13 +1001,20 @@
             const endIndex = startIndex + recordsPerPage;
             const paginatedFacts = facts.slice(startIndex, endIndex);
 
-            container.innerHTML = paginatedFacts.map(f => `
+            const globalTasa = parseFloat(document.getElementById('global-bcv').value) || 0;
+
+            container.innerHTML = paginatedFacts.map(f => {
+                // AQUÍ APLICAMOS LA CORRECCIÓN AL HISTORIAL
+                let tasaAplicable = tasasHistoricas[f.fecha] ? parseFloat(tasasHistoricas[f.fecha]) : globalTasa;
+                let bsCalculado = f.monto * tasaAplicable;
+                
+                return `
                 <div style="padding:16px 0; border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:0.95rem;">${f.fecha} — <strong>${f.detalle}</strong></span>
                     <div style="display:flex; align-items:center; gap:15px; text-align:right;">
                         <div>
                             <span style="color:#4ade80; font-weight:bold; font-size:1.05rem;">+$${f.monto}</span><br>
-                            <small style="color:var(--color-blue-light); font-size:0.75rem;">Bs. ${(f.monto_bs || 0).toFixed(2)}</small>
+                            <small style="color:var(--color-blue-light); font-size:0.75rem;">Bs. ${bsCalculado.toFixed(2)}</small>
                         </div>
                         <button class="btn-delete" onclick="deleteRecord('${f.id}')">
                             <svg style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;" viewBox="0 0 24 24">
@@ -918,7 +1026,7 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
 
             if (totalPages > 1) {
                 let paginationHtml = '';
@@ -968,6 +1076,9 @@
                 const dayStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayEvents = db.filter(e => e.fecha === dayStr);
 
+                let tasaAplicable = tasasHistoricas[dayStr] ? parseFloat(tasasHistoricas[dayStr]) : globalTasa;
+                let indicadorTasaVisual = tasasHistoricas[dayStr] ? `<span style="font-size:0.65rem; color:#ffffff;">Tasa: ${tasaAplicable}</span>` : '';
+
                 let badgesHtml = '';
                 if(dayEvents.length > 0) {
                     badgesHtml = `<div class="events-container">`;
@@ -975,21 +1086,22 @@
                         let claseBadge = 'factura';
                         let icon = '+$';
                         let displayMontoBs = '';
+                        let bsCalculado = 0;
                         
-                        if(e.tipo === 'cuota') {
-                            if(e.estado === 'pagada') {
+                        if (e.tipo === 'factura') {
+                            bsCalculado = e.monto * tasaAplicable;
+                            displayMontoBs = `<span class="badge-bs">Bs. ${bsCalculado.toFixed(2)}</span>`;
+                        } else if (e.tipo === 'cuota') {
+                            if (e.estado === 'pagada') {
                                 claseBadge = 'cuota-pagada';
                                 icon = '✓';
+                                bsCalculado = e.monto_bs || (e.monto * tasaAplicable);
                             } else {
                                 claseBadge = 'cuota-pendiente';
                                 icon = '⌛';
+                                bsCalculado = e.monto * tasaAplicable;
                             }
-                        }
-
-                        if(e.estado === 'pagada' && e.monto_bs) {
-                            displayMontoBs = `<span class="badge-bs">Bs. ${e.monto_bs.toFixed(2)}</span>`;
-                        } else if(e.estado === 'pendiente' && globalTasa > 0) {
-                            displayMontoBs = `<span class="badge-bs">Bs. ${(e.monto * globalTasa).toFixed(2)}</span>`;
+                            displayMontoBs = `<span class="badge-bs">Bs. ${bsCalculado.toFixed(2)}</span>`;
                         }
 
                         badgesHtml += `
@@ -1005,7 +1117,10 @@
 
                 grid.innerHTML += `
                     <div class="calendar-day" onclick="openModal('${dayStr}')">
-                        <span class="day-number">${day}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                            <span class="day-number" style="margin:0;">${day}</span>
+                            ${indicadorTasaVisual}
+                        </div>
                         ${badgesHtml}
                     </div>`;
             }
@@ -1018,17 +1133,29 @@
 
         function openModal(dateStr) {
             const modal = document.getElementById('day-modal');
-            const modalDate = document.getElementById('modal-date');
+            const modalHeader = document.getElementById('modal-header-container');
             const listContainer = document.getElementById('modal-events-list');
+            
             const globalTasa = parseFloat(document.getElementById('global-bcv').value) || 0;
+            const isCustomRate = !!tasasHistoricas[dateStr];
+            const tasaVisualizar = isCustomRate ? tasasHistoricas[dateStr] : globalTasa;
 
-            modalDate.innerText = `Registros para el ${dateStr}`;
+            modalHeader.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--color-border); padding-bottom:15px; margin-bottom:15px;">
+                    <h3 style="margin:0; color:var(--text-main); font-size: 1.1rem;">Registros del ${dateStr}</h3>
+                    <div style="display:flex; align-items:center; gap:6px; background: #0c0c0e; padding: 4px 8px; border-radius: 6px; border: 1px dashed ${isCustomRate ? '#ffffff' : 'var(--color-border)'};">
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Tasa del día:</span>
+                        <input type="number" id="modal-tasa-input" value="${tasaVisualizar}" step="0.01" style="width: 65px; padding: 2px; font-size: 0.8rem; background: transparent; border: none; color: ${isCustomRate ? '#ffffff' : '#10b981'}; text-align: center; outline: none; font-weight: bold;">
+                        <button onclick="guardarTasaHistorica('${dateStr}')" style="background:none; border:none; cursor:pointer; font-size:0.9rem; padding:0;" title="Guardar tasa manual">💾</button>
+                    </div>
+                </div>
+            `;
+
             listContainer.innerHTML = '';
-
             const dayEvents = db.filter(e => e.fecha === dateStr);
 
             if(dayEvents.length === 0) {
-                listContainer.innerHTML = '<p style="color:var(--color-blue-light);">No hay planes ni cobros agendados para este día.</p>';
+                listContainer.innerHTML = '<p style="color:var(--color-blue-light); font-size: 0.9rem;">No hay planes ni cobros agendados para este día.</p>';
             } else {
                 dayEvents.forEach(e => {
                     let actionsHtml = '';
@@ -1036,14 +1163,15 @@
 
                     if(e.tipo === 'cuota') {
                         if(e.estado === 'pendiente') {
-                            infoMonto = `<span style="color:#94a3b8; font-weight:bold;">$${e.monto}</span> (Est. Bs. ${(e.monto * globalTasa).toFixed(2)})`;
-                            actionsHtml = `<button class="btn-status pending" onclick="markQuotaAsPaid('${e.sub_id}')">Marcar como Pagado</button>`;
+                            infoMonto = `<span style="color:#94a3b8; font-weight:bold;">$${e.monto}</span> (Est. Bs. ${(e.monto * tasaVisualizar).toFixed(2)})`;
+                            actionsHtml = `<button class="btn-status pending" onclick="markQuotaAsPaid('${e.sub_id}', '${dateStr}')">Marcar como Pagado</button>`;
                         } else {
                             infoMonto = `<span style="color:#38bdf8; font-weight:bold;">$${e.monto}</span> (Pagado a Tasa: ${e.tasa_pago} -> Bs. ${e.monto_bs.toFixed(2)})`;
                             actionsHtml = `<span class="btn-status paid">✓ Pagada</span>`;
                         }
                     } else {
-                        infoMonto = `<span style="color:#4ade80; font-weight:bold;">+$${e.monto}</span> (Bs. ${(e.monto_bs || 0).toFixed(2)})`;
+                        const bsCalculado = e.monto * tasaVisualizar;
+                        infoMonto = `<span style="color:#4ade80; font-weight:bold;">+$${e.monto}</span> (Bs. ${bsCalculado.toFixed(2)})`;
                         actionsHtml = `<span style="color:#4ade80; font-size:0.85rem; font-weight:bold;">[INICIAL DEPOSITADA]</span>`;
                     }
 
@@ -1057,7 +1185,7 @@
                         </div>`;
                 });
             }
-            modal.style.display = 'flex';
+            document.getElementById('day-modal').style.display = 'flex';
         }
 
         document.getElementById('day-modal').addEventListener('click', function(e) {
@@ -1068,13 +1196,18 @@
             document.getElementById('day-modal').style.display = 'none';
         }
 
-        // --- EXPORTAR RESPALDO LOCAL DE SEGURIDAD ---
         function exportBackup() {
             if(db.length === 0) {
                 alert('No hay datos en la nube para descargar.');
                 return;
             }
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const cleanDb = db.map(item => {
+                const cleanItem = { ...item };
+                delete cleanItem.firebaseKey;
+                return cleanItem;
+            });
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cleanDb));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `xnet_backup_nube_${new Date().toISOString().split('T')[0]}.json`);
@@ -1083,7 +1216,6 @@
             downloadAnchor.remove();
         }
 
-        // --- IMPORTAR VIEJO RESPALDO LOCAL DIRECTO A LA NUBE ---
         function importBackup(input) {
             const file = input.files[0];
             if (!file) return;
@@ -1095,7 +1227,6 @@
                     if(Array.isArray(importedData)) {
                         if(confirm(`Se subirán ${importedData.length} registros a tu base de datos Firebase. ¿Continuar?`)) {
                             importedData.forEach(item => {
-                                // Limpiar llaves temporales anteriores si las hubiere
                                 delete item.firebaseKey;
                                 database.ref('operaciones').push(item);
                             });
