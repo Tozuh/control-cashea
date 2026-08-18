@@ -509,8 +509,8 @@
             border-radius: 12px;
             border: 1px solid var(--color-border);
             width: 480px;
-            max-height: 80vh; /* AJUSTE PARA EL SCROLL: Altura máxima */
-            overflow-y: auto;  /* AJUSTE PARA EL SCROLL: Añade barra vertical si desborda */
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .btn-status {
@@ -538,7 +538,7 @@
                 <img src="cashea.PNG" style="width: 40px; height: 40px; border-radius: 8px;" onerror="this.style.display='none'">
                 <span style="font-weight: 700; font-size: 1.1rem; color: var(--text-main); letter-spacing: 0.5px;">Acceso Privado</span>
             </div>
-            <p style="color: var(--color-blue-light); font-size: 0.85rem; margin-top: 0; margin-bottom: 20px;">Ingresa tus credenciales de administrador</p>
+            <p style="color: var(--color-blue-light); font-size: 0.85rem; margin-top: 0; margin-bottom: 20px;">Ingresa tu contraseña de administrador</p>
             <input type="password" id="clave-acceso" placeholder="Introduce la contraseña" style="width: 100%; box-sizing: border-box; background-color: #0c0c0e; border: 1px solid var(--color-border); color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 1rem; outline: none;">
             <button onclick="verificarClave()" style="width: 100%; padding: 12px; background-color: var(--color-blue-mid); color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s;">Entrar al Sistema</button>
             <p id="error-login" style="color: #ef4444; font-size: 0.85rem; margin-top: 12px; margin-bottom: 0; display: none; font-weight: 600;">⚠️ Contraseña incorrecta</p>
@@ -683,7 +683,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN OFICIAL DETECTADA EN TU PROYECTO XNET-CASHEA
+        // CONFIGURACIÓN OFICIAL DE FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAwpLHxPpbjiUDmRCUAhgchAVn_AdDoug",
             authDomain: "xnet-cashea.firebaseapp.com",
@@ -693,7 +693,8 @@
             messagingSenderId: "55914413592",
             appId: "1:55914413592:web:4e996ebb9a6cc771f424d"
         };
-        // Inicializar Firebase
+        
+        // Inicializar Firebase (Solo Realtime Database)
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -721,19 +722,23 @@
             refreshActiveViews();
         });
 
+        // VALIDACIÓN LOCAL DIRECTA DE LA CLAVE "123456"
         function verificarClave() {
             const inputClave = document.getElementById('clave-acceso');
             const txtError = document.getElementById('error-login');
-            
-            if (inputClave.value === "xnet1") {
+            const password = inputClave.value;
+
+            if (password === "123456") {
                 sessionStorage.setItem('xnet_sesion_activa', 'true');
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('contenido-aplicacion').style.display = 'block';
                 txtError.style.display = 'none';
+                inputClave.value = '';
                 
                 cargarTasaAlmacenada();
             } else {
                 txtError.style.display = 'block';
+                txtError.innerText = '⚠️ Contraseña incorrecta';
                 inputClave.value = '';
                 inputClave.focus();
             }
@@ -767,12 +772,15 @@
             if(document.getElementById('view-facturado').classList.contains('active')) renderFacturas();
         }
 
+        // VERIFICA SESIÓN ACTIVA AL CARGAR LA PÁGINA
         window.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('xnet_sesion_activa') === 'true') {
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('contenido-aplicacion').style.display = 'block';
                 cargarTasaAlmacenada();
             } else {
+                document.getElementById('pantalla-login').style.display = 'flex';
+                document.getElementById('contenido-aplicacion').style.display = 'none';
                 document.getElementById('clave-acceso').focus();
             }
         });
